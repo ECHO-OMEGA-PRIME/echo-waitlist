@@ -1,0 +1,22 @@
+name = "echo-waitlist"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "echo-waitlist"
+database_id = "03d81147-f16a-42b3-bcfc-3e611f53099b"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "acc98d36d4a64f4485d96f19faa63b8d"
+
+[vars]
+ENVIRONMENT = "production"
+
+[[services]]
+binding = "EMAIL_SENDER"
+service = "echo-email-sender"
+
+[triggers]
+crons = ["0 8 * * *"]
