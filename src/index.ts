@@ -165,6 +165,7 @@ export default {
     }
 
     // ── Authenticated endpoints ──
+    try {
     if (!authOk(req, env)) return err('Unauthorized', 401);
     const tid = req.headers.get('X-Tenant-ID') || url.searchParams.get('tenant_id') || '';
 
@@ -277,6 +278,13 @@ export default {
     }
 
     return err('Not found', 404);
+
+    } catch (err_caught: unknown) {
+      const msg = err_caught instanceof Error ? err_caught.message : 'Unknown error';
+      const stack = err_caught instanceof Error ? err_caught.stack : undefined;
+      slog('error', 'Unhandled request error', { method: m, path: p, error: msg, stack });
+      return json({ ok: false, error: 'Internal server error', message: msg, path: p }, 500);
+    }
     } catch (e: unknown) {
       const msg = (e as Error).message || String(e);
       if (msg.includes('JSON')) return err('Invalid JSON body', 400);
