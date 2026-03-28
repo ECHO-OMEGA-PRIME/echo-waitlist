@@ -48,7 +48,7 @@ export default {
     const p = url.pathname;
     const m = req.method;
 
-    if (p === '/health') return json({ status: 'healthy', service: 'echo-waitlist', version: '1.0.0', timestamp: new Date().toISOString() });
+    if (p === '/health' || p === '/') return json({ status: 'healthy', service: 'echo-waitlist', version: '1.0.0', timestamp: new Date().toISOString() });
 
     // ── Public: Join waitlist ──
     if (m === 'POST' && p === '/join') {
