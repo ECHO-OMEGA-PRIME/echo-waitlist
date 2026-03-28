@@ -16,7 +16,14 @@ function sanitize(s: string, max = 500): string { return s.replace(/[\x00-\x08\x
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': '*' , 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'X-XSS-Protection': '1; mode=block', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains' } });
 }
-function err(msg: string, status = 400): Response { return json({ error: msg }, status); }
+function err(msg: string, status = 400): Response { return json({ error: msg }
+
+function slog(level: 'info' | 'warn' | 'error', msg: string, data?: Record<string, unknown>) {
+  const entry = { ts: new Date().toISOString(), level, worker: 'echo-waitlist', version: '1.0.0', msg, ...data };
+  if (level === 'error') console.error(JSON.stringify(entry));
+  else console.log(JSON.stringify(entry));
+}
+, status); }
 
 function authOk(req: Request, env: Env): boolean {
   return (req.headers.get('X-Echo-API-Key') || new URL(req.url).searchParams.get('key')) === env.ECHO_API_KEY;
