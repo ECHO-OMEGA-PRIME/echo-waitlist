@@ -47,7 +47,7 @@ async function hashIP(ip: string): Promise<string> {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': '*' } });
 
     try {
@@ -104,9 +104,9 @@ export default {
         .bind(id, body.campaign_id, campaign.tenant_id, email, body.name ? sanitize(body.name, 200) : null, position, code, referredBy, effectivePosition, body.custom_data ? JSON.stringify(body.custom_data) : '{}', ipHash).run();
       await env.DB.prepare('UPDATE campaigns SET total_signups = total_signups + 1 WHERE id=?').bind(body.campaign_id).run();
 
-      // Send confirmation email (fire and forget)
+      // Send confirmation email (ctx.waitUntil to ensure delivery)
       if (campaign.confirmation_email) {
-        (async () => {
+        ctx.waitUntil((async () => {
           try {
             const referralLink = `https://echo-waitlist.bmcii1976.workers.dev/join-page/${campaign.slug}?ref=${code}`;
             await env.EMAIL_SENDER.fetch('https://email/send', {
@@ -117,7 +117,7 @@ export default {
               })
             });
           } catch {}
-        })();
+        })());
       }
 
       return json({ position, effective_position: effectivePosition, referral_code: code, total: campaign.total_signups + 1 });
