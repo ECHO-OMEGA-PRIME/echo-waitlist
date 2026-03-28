@@ -43,6 +43,7 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS', 'Access-Control-Allow-Headers': '*' } });
 
+    try {
     const url = new URL(req.url);
     const p = url.pathname;
     const m = req.method;
@@ -269,6 +270,12 @@ export default {
     }
 
     return err('Not found', 404);
+    } catch (e: unknown) {
+      const msg = (e as Error).message || String(e);
+      if (msg.includes('JSON')) return err('Invalid JSON body', 400);
+      console.error(`[echo-waitlist] ${msg}`);
+      return err('Internal server error', 500);
+    }
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
